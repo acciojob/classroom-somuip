@@ -14,7 +14,7 @@ public class StudentRepository {
 
     Map<String,Teacher> teacherdb = new HashMap<>();
 
-    Map<String,String> teacherStudentPairdb = new HashMap<>();
+    Map<String,List<String>> teacherStudentPairdb = new HashMap<>();
 
     public void addStudent(Student student){
         studentdb.put(student.getName(), student);
@@ -25,7 +25,15 @@ public class StudentRepository {
     }
 
     public void teacherStudentPair(String studentName, String teacherName){
-        teacherStudentPairdb.put(studentName, teacherName);
+
+        List<String> students = teacherStudentPairdb.get(teacherName);
+
+        if(students == null){
+            students = new ArrayList<>();
+        }
+        students.add(studentName);
+        teacherStudentPairdb.put(teacherName, students);
+
     }
     public Student getStudentByName(String studentName){
         return studentdb.get(studentName);
@@ -36,14 +44,7 @@ public class StudentRepository {
     }
 
     public List<String> getStudnetListForteacher(String teacher){
-        List<String> list = new ArrayList<>();
-        for(Map.Entry<String,String> entry : teacherStudentPairdb.entrySet()){
-            if(entry.getValue().equals(teacher)){
-                String studentName = entry.getKey();
-                list.add(studentName);
-            }
-        }
-        return list;
+        return teacherStudentPairdb.get(teacher);
     }
 
     public List<String> getListOfStudents(){
@@ -55,24 +56,22 @@ public class StudentRepository {
     }
 
     public void deleteTeacher(String teacher){
-        teacherdb.remove(teacher);
-        for(Map.Entry<String, String> entry : teacherStudentPairdb.entrySet()){
-            if(entry.getValue().equals(teacher)){
-                String student = entry.getKey();
-                studentdb.remove(student);
-                teacherStudentPairdb.remove(student, teacher);
-            }
+        for(String str : teacherStudentPairdb.get(teacher)){
+
+            studentdb.remove(str);
         }
+        teacherdb.remove(teacher);
+        teacherStudentPairdb.remove(teacher);
     }
 
-    public void deleteAllTeachersAndStudents(){
+    public void deleteAllTeachersAndStudents() {
+        for(String teacher : teacherStudentPairdb.keySet()){
+            for(String str : teacherStudentPairdb.get(teacher)){
 
-        for(Map.Entry<String,String> entry : teacherStudentPairdb.entrySet()){
-            String student = entry.getKey();
-            String teacher = entry.getValue();
-            teacherStudentPairdb.remove(student, teacher);
-            studentdb.remove(student);
+                studentdb.remove(str);
+            }
             teacherdb.remove(teacher);
+            teacherStudentPairdb.remove(teacher);
         }
     }
 }
